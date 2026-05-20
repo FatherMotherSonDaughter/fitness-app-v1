@@ -8896,7 +8896,9 @@ button:active,
   }
 
   .day-square,
-  #caloriesScreen .day-square {
+  #caloriesScreen .day-square,
+  #weightScreen .day-square,
+  #liftsScreen .day-square {
     width: 50px !important;
     min-width: 50px !important;
   }
@@ -8970,4 +8972,46 @@ button:active,
 #dashboardScreen .chart-panel::after {
   display: none !important;
   content: none !important;
+}
+
+/* v220: stable native iPhone-style date carousel */
+.day-strip,
+#caloriesScreen .day-strip,
+#weightScreen .day-strip,
+#liftsScreen .day-strip {
+  scroll-snap-type: x mandatory !important;
+  scroll-padding-inline: var(--date-strip-edge, 120px) !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-x pan-y !important;
+  cursor: default !important;
+}
+
+.day-strip.is-dragging,
+#caloriesScreen .day-strip.is-dragging,
+#weightScreen .day-strip.is-dragging,
+#liftsScreen .day-strip.is-dragging {
+  scroll-snap-type: x mandatory !important;
+  scroll-behavior: smooth !important;
+  cursor: default !important;
+}
+
+.day-track,
+#foodDayTrack,
+[data-date-track] {
+  align-items: center !important;
+  will-change: auto !important;
+}
+
+.day-square,
+#caloriesScreen .day-square,
+#weightScreen .day-square,
+#liftsScreen .day-square {
+  scroll-snap-align: center !important;
+  flex: 0 0 auto !important;
+}
+
+.day-switcher-head button,
+.calendar-sheet button,
+.day-square {
+  pointer-events: auto !important;
 }

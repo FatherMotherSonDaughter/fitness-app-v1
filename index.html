@@ -10,13 +10,13 @@
     <title>Fitness App V1</title>
     <script>
       if (window.location.protocol === "file:") {
-        window.location.replace("http://localhost:4173/?fresh=219");
+        window.location.replace("http://localhost:4173/?fresh=220");
       }
     </script>
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="icon.svg" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="styles.css?v=219" />
+    <link rel="stylesheet" href="styles.css?v=220" />
   </head>
   <body>
     <div class="app-shell">
@@ -736,7 +736,7 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js?v=219"></script>
+    <script src="app.js?v=220"></script>
     <script>
       window.forgeSwitchScreen = function (screen) {
         var tab = document.querySelector('.tab[data-screen="' + screen + '"]');
@@ -1158,13 +1158,10 @@
         }
 
         document.addEventListener("click", function (event) {
-          var calendar = event.target.closest("#calendarJumpButton");
-          var previousWeek = event.target.closest("#previousFoodWeek");
-          var nextWeek = event.target.closest("#nextFoodWeek");
           var plus = event.target.closest("#logFoodButton");
           var addMenu = event.target.closest("#addMenuButton, #fridgeAddMenuButton");
           var foodLogClose = event.target.closest("#foodLogSheetClose");
-          if (!plus && !addMenu && !calendar && !previousWeek && !nextWeek && !foodLogClose) return;
+          if (!plus && !addMenu && !foodLogClose) return;
           event.preventDefault();
           event.stopImmediatePropagation();
 
@@ -1179,26 +1176,6 @@
             return;
           }
 
-          if (previousWeek) {
-            fallbackSelectedFoodDate = addDays(fallbackSelectedFoodDate, -1);
-            renderFallbackTodayFood();
-            return;
-          }
-          if (nextWeek) {
-            fallbackSelectedFoodDate = addDays(fallbackSelectedFoodDate, 1);
-            renderFallbackTodayFood();
-            return;
-          }
-          if (calendar) {
-            var sheet = document.querySelector("#calendarSheet");
-            var panel = document.querySelector(".calendar-sheet");
-            if (sheet && panel) {
-              panel.hidden = false;
-              sheet.classList.add("open");
-              sheet.setAttribute("aria-hidden", "false");
-            }
-            return;
-          }
           var actions = document.querySelector("#logFoodActions");
           var picker = document.querySelector("#quickMealPicker");
           if (plus && actions) {

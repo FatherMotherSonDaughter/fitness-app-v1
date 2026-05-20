@@ -153,6 +153,8 @@ let selectedFoodDate = today();
 let dateStripCenterDate = selectedFoodDate;
 let dateStripShouldCenter = true;
 let dateStripDragSuppressUntil = 0;
+let dateStripProgrammaticUntil = 0;
+const dateStripScrollTimers = new WeakMap();
 let lastKnownDate = today();
 let editingLiftId = null;
 let editingMealId = null;
@@ -1263,67 +1265,43 @@ function bindDateStripWheel(strip) {
     event.preventDefault();
     strip.scrollBy({ left: delta, behavior: "smooth" });
   }, { passive: false });
-  bindDateStripDrag(strip);
+  bindDateStripScrollSelection(strip);
 }
 
-function bindDateStripDrag(strip) {
-  if (!strip || strip.dataset.dragBound === "true") return;
-  strip.dataset.dragBound = "true";
-  let pointerId = 0;
-  let startX = 0;
-  let startScrollLeft = 0;
-  let moved = false;
-  let lastX = 0;
-  let lastTime = 0;
-  let velocity = 0;
-  let tappedDate = "";
-
-  const finish = () => {
-    if (!pointerId) return;
-    if (moved) {
-      dateStripDragSuppressUntil = Date.now() + 250;
-      strip.scrollBy({ left: velocity * 180, behavior: "smooth" });
-    } else if (tappedDate) {
-      selectedFoodDate = tappedDate;
-      render();
+function centeredDateInStrip(strip) {
+  if (!strip) return "";
+  const stripBox = strip.getBoundingClientRect();
+  const stripCenter = stripBox.left + stripBox.width / 2;
+  let closest = null;
+  let closestDistance = Infinity;
+  strip.querySelectorAll(".day-square[data-date]").forEach((button) => {
+    const box = button.getBoundingClientRect();
+    const center = box.left + box.width / 2;
+    const distance = Math.abs(center - stripCenter);
+    if (distance < closestDistance) {
+      closest = button;
+      closestDistance = distance;
     }
-    pointerId = 0;
-    moved = false;
-    tappedDate = "";
-    strip.classList.remove("is-dragging");
-  };
-
-  strip.addEventListener("pointerdown", (event) => {
-    if (event.pointerType === "mouse" && event.button !== 0) return;
-    pointerId = event.pointerId;
-    startX = event.clientX;
-    startScrollLeft = strip.scrollLeft;
-    lastX = event.clientX;
-    lastTime = performance.now();
-    velocity = 0;
-    moved = false;
-    tappedDate = event.target.closest(".day-square[data-date]")?.dataset.date || "";
-    strip.setPointerCapture?.(pointerId);
   });
+  return closest?.dataset.date || "";
+}
 
-  strip.addEventListener("pointermove", (event) => {
-    if (event.pointerId !== pointerId) return;
-    const dx = event.clientX - startX;
-    if (Math.abs(dx) > 5) moved = true;
-    if (!moved) return;
-    event.preventDefault();
-    strip.classList.add("is-dragging");
-    strip.scrollLeft = startScrollLeft - dx;
-    const now = performance.now();
-    const elapsed = Math.max(1, now - lastTime);
-    velocity = (lastX - event.clientX) / elapsed;
-    lastX = event.clientX;
-    lastTime = now;
-  });
-
-  strip.addEventListener("pointerup", finish);
-  strip.addEventListener("pointercancel", finish);
-  strip.addEventListener("lostpointercapture", finish);
+function bindDateStripScrollSelection(strip) {
+  if (!strip || strip.dataset.scrollSelectBound === "true") return;
+  strip.dataset.scrollSelectBound = "true";
+  strip.addEventListener("scroll", () => {
+    if (Date.now() < dateStripProgrammaticUntil) return;
+    window.clearTimeout(dateStripScrollTimers.get(strip));
+    const timer = window.setTimeout(() => {
+      const centeredDate = centeredDateInStrip(strip);
+      if (!centeredDate || centeredDate === selectedFoodDate) return;
+      selectedFoodDate = centeredDate;
+      dateStripCenterDate = centeredDate;
+      dateStripShouldCenter = false;
+      render();
+    }, 140);
+    dateStripScrollTimers.set(strip, timer);
+  }, { passive: true });
 }
 
 function centerActiveDayInStrip(strip, behavior = "smooth") {
@@ -1331,6 +1309,7 @@ function centerActiveDayInStrip(strip, behavior = "smooth") {
   if (!strip || !active) return;
   updateDateStripEdge(strip);
   const left = active.offsetLeft - (strip.clientWidth - active.offsetWidth) / 2;
+  dateStripProgrammaticUntil = Date.now() + 450;
   strip.scrollTo({ left: Math.max(0, left), behavior });
 }
 
@@ -1445,12 +1424,14 @@ function renderCalendarSheet() {
     button.type = "button";
     button.dataset.date = value;
     button.innerHTML = `<span>${date.getDate()}</span><i aria-hidden="true"></i>`;
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
       selectedFoodDate = value;
       centerDateStripOnSelected();
       calendarViewDate = value;
+      closeCalendarSheet();
       render();
-      renderCalendarSheet();
     });
     els.calendarGrid.append(button);
   }
@@ -4532,19 +4513,29 @@ function bindCaloriesTools() {
   els.calendarSheet?.addEventListener("click", (event) => {
     if (event.target === els.calendarSheet) closeCalendarSheet();
   });
-  els.calendarCloseButton?.addEventListener("click", closeCalendarSheet);
-  els.calendarTodayButton?.addEventListener("click", () => {
+  els.calendarCloseButton?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    closeCalendarSheet();
+  });
+  els.calendarTodayButton?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     selectedFoodDate = today();
     centerDateStripOnSelected();
     calendarViewDate = selectedFoodDate;
+    closeCalendarSheet();
     render();
-    renderCalendarSheet();
   });
-  els.calendarPrevMonth?.addEventListener("click", () => {
+  els.calendarPrevMonth?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     calendarViewDate = addMonths(calendarViewDate, -1);
     renderCalendarSheet();
   });
-  els.calendarNextMonth?.addEventListener("click", () => {
+  els.calendarNextMonth?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     calendarViewDate = addMonths(calendarViewDate, 1);
     renderCalendarSheet();
   });
