@@ -1,10 +1,10 @@
-const CACHE_NAME = "fitness-app-v1-v218";
+const CACHE_NAME = "fitness-app-v1-v219";
 const INDEX_URL = new URL("index.html", self.registration.scope).href;
 const APP_SHELL = [
   "./",
   "index.html",
-  "styles.css?v=218",
-  "app.js?v=218",
+  "styles.css?v=219",
+  "app.js?v=219",
   "manifest.json",
   "icon.svg"
 ];

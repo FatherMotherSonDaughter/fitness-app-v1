@@ -1840,6 +1840,14 @@ function skipLiftTimerExercise() {
   const items = plannedLiftItems();
   if (!items.length || liftTimer.mode === "done") return;
   const active = normalizedLiftTimer(items);
+  if (liftTimer.mode === "rest") {
+    const entries = liftTimerEntries();
+    const last = entries[entries.length - 1];
+    if (last && !last.restMs) {
+      last.restMs = currentLiftTimerElapsed();
+      last.restEndedAt = new Date().toISOString();
+    }
+  }
   const next = nextLiftTimerPosition(items, active.exerciseIndex, active.setIndex);
   liftTimer = next.done
     ? { mode: "done", startedAt: 0, currentSetStartedAt: 0, exerciseIndex: active.exerciseIndex, setIndex: active.setIndex, paused: false, pausedAt: 0 }
@@ -1877,6 +1885,30 @@ function toggleLiftTimerPause() {
   };
   startLiftTimerTicker();
   renderLiftTimer();
+}
+
+function handleLiftTimerAction(event, action) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (action === "tap") {
+    handleLiftTimerTap();
+    return;
+  }
+  if (action === "reset") {
+    resetLiftTimer();
+    return;
+  }
+  if (action === "previous") {
+    previousLiftTimerSet();
+    return;
+  }
+  if (action === "pause") {
+    toggleLiftTimerPause();
+    return;
+  }
+  if (action === "skip") {
+    skipLiftTimerExercise();
+  }
 }
 
 function renderNutritionTracker() {
@@ -4430,11 +4462,18 @@ function bindForms() {
   els.scannerPhotoButton?.addEventListener("click", () => {
     barcodeScanState.row?.querySelector(".ingredient-photo-input")?.click();
   });
-  els.liftTimerTap?.addEventListener("click", handleLiftTimerTap);
-  els.liftTimerReset?.addEventListener("click", resetLiftTimer);
-  els.liftTimerPrevious?.addEventListener("click", previousLiftTimerSet);
-  els.liftTimerPause?.addEventListener("click", toggleLiftTimerPause);
-  els.liftTimerSkip?.addEventListener("click", skipLiftTimerExercise);
+  document.addEventListener("click", (event) => {
+    const target = event.target.closest("#liftTimerTap, #liftTimerReset, #liftTimerPrevious, #liftTimerPause, #liftTimerSkip");
+    if (!target) return;
+    const actionMap = {
+      liftTimerTap: "tap",
+      liftTimerReset: "reset",
+      liftTimerPrevious: "previous",
+      liftTimerPause: "pause",
+      liftTimerSkip: "skip"
+    };
+    handleLiftTimerAction(event, actionMap[target.id]);
+  });
   els.liftTimerCard?.addEventListener("click", (event) => {
     if (event.target.closest("button, input, select, textarea, a")) return;
     handleLiftTimerTap();
