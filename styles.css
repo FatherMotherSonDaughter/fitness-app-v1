@@ -9015,3 +9015,108 @@ button:active,
 .day-square {
   pointer-events: auto !important;
 }
+
+/* v221: compact dashboard summary */
+#dashboardScreen.screen.active {
+  gap: 8px !important;
+}
+
+#dashboardScreen .dashboard-date {
+  margin: -2px 0 2px !important;
+  font-size: 0.64rem !important;
+  line-height: 1 !important;
+}
+
+#dashboardScreen .hero-panel {
+  grid-template-columns: minmax(0, 1fr) 54px !important;
+  min-height: 76px !important;
+  padding: 10px 12px !important;
+  border-radius: 18px !important;
+}
+
+#dashboardScreen .hero-panel strong {
+  margin: 2px 0 !important;
+  font-size: 1.45rem !important;
+  line-height: 0.95 !important;
+}
+
+#dashboardScreen .hero-panel small {
+  font-size: 0.68rem !important;
+  line-height: 1.12 !important;
+}
+
+#dashboardScreen .metric-label,
+#dashboardScreen .stat-card span {
+  font-size: 0.58rem !important;
+  line-height: 1 !important;
+}
+
+#dashboardScreen .goal-ring,
+#dashboardScreen .goal-ring canvas {
+  width: 54px !important;
+  height: 54px !important;
+}
+
+#dashboardScreen .goal-ring span {
+  font-size: 0.76rem !important;
+}
+
+#dashboardScreen .dashboard-stack {
+  gap: 6px !important;
+}
+
+#dashboardScreen .stat-card {
+  min-height: 58px !important;
+  padding: 9px 12px !important;
+  border-radius: 18px !important;
+}
+
+#dashboardScreen .stat-card strong {
+  margin: 4px 0 2px !important;
+  font-size: 1.05rem !important;
+  line-height: 1 !important;
+}
+
+#dashboardScreen .stat-card small {
+  font-size: 0.66rem !important;
+  line-height: 1.1 !important;
+}
+
+#dashboardScreen .chart-panel {
+  padding: 12px !important;
+  border-radius: 18px !important;
+}
+
+#dashboardScreen .chart-panel .section-heading {
+  margin-bottom: 8px !important;
+}
+
+#dashboardScreen .chart-panel .section-heading h2 {
+  font-size: 0.98rem !important;
+}
+
+#dashboardScreen .chart-panel .section-heading span {
+  font-size: 0.72rem !important;
+}
+
+#dashboardScreen .chart-panel .segmented-control,
+#dashboardScreen .chart-panel .metric-choice-row {
+  gap: 6px !important;
+  margin-bottom: 8px !important;
+}
+
+#dashboardScreen .chart-panel .segmented-control button,
+#dashboardScreen .chart-panel .toggle-pill {
+  min-height: 34px !important;
+  border-radius: 12px !important;
+  font-size: 0.78rem !important;
+}
+
+#dashboardScreen #progressChart {
+  height: 132px !important;
+  max-height: 132px !important;
+}
+
+#dashboardScreen .chart-legend {
+  margin-top: 6px !important;
+}
