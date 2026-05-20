@@ -1,0 +1,21 @@
+{
+  "id": "fitness-app-v1",
+  "name": "Fitness App V1",
+  "short_name": "Fitness",
+  "description": "Track calories, macros, weight, and lift progress from your phone.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#20262b",
+  "theme_color": "#20262b",
+  "categories": ["fitness", "health", "lifestyle"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,1602 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#20262b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Fitness" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Fitness App V1</title>
+    <script>
+      if (window.location.protocol === "file:") {
+        window.location.replace("http://localhost:4173/?fresh=218");
+      }
+    </script>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icon.svg" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css?v=218" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Fitness App V1</p>
+          <h1 id="screenTitle">Dashboard</h1>
+          <p class="live-clock" id="liveDateTime">--</p>
+        </div>
+        <button class="profile-button" id="profileButton" type="button" aria-label="Switch profile">
+          <span id="profileInitials">ME</span>
+        </button>
+      </header>
+
+      <main>
+        <section class="screen active" id="dashboardScreen" aria-labelledby="dashboardTab">
+          <div class="dashboard-date" id="dashboardDate">Today</div>
+          <button class="hero-panel tappable-panel" id="calorieSummaryButton" type="button">
+            <div>
+              <span class="metric-label">Today</span>
+              <strong><span id="todayCalories">0 cal</span> <span class="trend-indicator" id="calorieTrend">→</span></strong>
+              <small id="todayMacros">0g protein · 0g carbs · 0g fat</small>
+            </div>
+            <div class="goal-ring" aria-label="Calorie goal progress">
+              <canvas id="calorieRing" width="96" height="96"></canvas>
+              <span id="caloriePercent">0%</span>
+            </div>
+          </button>
+
+          <div class="dashboard-stack">
+            <button class="stat-card metric-card tappable-panel" id="weightSummaryButton" type="button">
+              <span>Current weight</span>
+              <strong><span id="currentWeight">--</span> <span class="trend-indicator" id="weightTrend">→</span></strong>
+              <small id="weightChange">No entries yet</small>
+            </button>
+            <button class="stat-card metric-card tappable-panel" id="liftSummaryButton" type="button">
+              <span>Lift progress</span>
+              <strong id="bestLift">--</strong>
+              <small id="bestLiftDetail">Log a set to start</small>
+            </button>
+            <button class="stat-card metric-card tappable-panel" id="streakSummaryButton" type="button">
+              <span>Streak</span>
+              <strong id="currentStreak">0 days</strong>
+              <small id="streakDetail">Log today to start</small>
+            </button>
+          </div>
+
+          <div class="chart-panel">
+            <div class="section-heading">
+              <h2>Progress</h2>
+              <span id="progressRangeLabel">Week</span>
+            </div>
+            <div class="segmented-control" id="rangeControls" aria-label="Graph range">
+              <button class="active" type="button" data-range="weeks">Week</button>
+              <button type="button" data-range="months">Month</button>
+              <button type="button" data-range="years">Year</button>
+            </div>
+            <div class="toggle-row metric-choice-row" aria-label="Graph metric">
+              <button class="toggle-pill active" type="button" data-chart-metric="calories">Calories</button>
+              <button class="toggle-pill" type="button" data-chart-metric="weight">Weight</button>
+              <button class="toggle-pill" type="button" data-chart-metric="lifts">Lifts</button>
+            </div>
+            <canvas id="progressChart" height="190"></canvas>
+            <div class="chart-legend" id="progressLegend"></div>
+          </div>
+        </section>
+
+        <section class="screen" id="weightScreen" aria-labelledby="weightTab">
+          <section class="day-switcher compact-date-switcher" data-date-switcher="weight" aria-label="Weight log day">
+            <div class="day-switcher-head">
+              <button class="week-button" type="button" data-date-action="previous" aria-label="Previous day">‹</button>
+              <strong data-date-label>Today</strong>
+              <button class="week-button" type="button" data-date-action="next" aria-label="Next day">›</button>
+              <button class="calendar-button" type="button" data-date-action="calendar" aria-label="Jump to date">▦</button>
+              <button class="today-button" type="button" data-date-action="today" aria-label="Jump to today">Today</button>
+            </div>
+            <input class="calendar-input" type="date" data-date-picker aria-label="Choose weight log date" />
+            <div class="day-strip" aria-label="Weight log dates">
+              <div class="day-track" data-date-track></div>
+            </div>
+          </section>
+          <div class="selected-day-summary" id="weightDaySummary">
+            <span>Selected weight</span>
+            <strong>--</strong>
+            <small>No weigh-in for this day</small>
+          </div>
+          <form class="entry-form" id="weightForm">
+            <label>
+              Date
+              <input id="weightDate" type="date" required />
+            </label>
+            <div class="weight-input-row">
+              <label>
+                Weight
+                <input id="weightValue" type="number" min="1" step="0.1" placeholder="178.4" />
+              </label>
+              <label>
+                Unit
+                <select id="weightEntryUnit">
+                  <option value="lb">lb</option>
+                  <option value="kg">kg</option>
+                </select>
+              </label>
+            </div>
+            <button class="primary-button" id="addWeightButton" type="submit">Add weight</button>
+          </form>
+          <div class="list-panel">
+            <div class="section-heading">
+              <h2>Weight log</h2>
+              <span id="weightCount">0 entries</span>
+            </div>
+            <div class="entry-list" id="weightList"></div>
+          </div>
+        </section>
+
+        <section class="screen" id="liftsScreen" aria-labelledby="liftsTab">
+          <section class="day-switcher compact-date-switcher" data-date-switcher="lifts" aria-label="Lift log day">
+            <div class="day-switcher-head">
+              <button class="week-button" type="button" data-date-action="previous" aria-label="Previous day">‹</button>
+              <strong data-date-label>Today</strong>
+              <button class="week-button" type="button" data-date-action="next" aria-label="Next day">›</button>
+              <button class="calendar-button" type="button" data-date-action="calendar" aria-label="Jump to date">▦</button>
+              <button class="today-button" type="button" data-date-action="today" aria-label="Jump to today">Today</button>
+            </div>
+            <input class="calendar-input" type="date" data-date-picker aria-label="Choose lift log date" />
+            <div class="day-strip" aria-label="Lift log dates">
+              <div class="day-track" data-date-track></div>
+            </div>
+          </section>
+          <div class="selected-day-summary" id="liftDaySummary">
+            <span>Selected workout</span>
+            <strong>--</strong>
+            <small>No lift sessions for this day</small>
+          </div>
+          <div class="lift-timer-card" id="liftTimerCard">
+            <div class="lift-timer-head">
+              <div>
+                <span id="liftTimerMode">Ready</span>
+                <strong id="liftTimerDisplay">00:00</strong>
+                <small id="liftTimerHint">Tap start when your set begins.</small>
+              </div>
+              <div class="lift-timer-exercise">
+                <span id="liftTimerExercise">Next exercise</span>
+                <small id="liftTimerProgress">Set 1</small>
+              </div>
+            </div>
+            <button class="primary-button lift-timer-tap" id="liftTimerTap" type="button">Start set</button>
+            <div class="lift-timer-actions">
+              <button class="mini-button" id="liftTimerReset" type="button">Reset</button>
+              <button class="mini-button" id="liftTimerPrevious" type="button">Prev</button>
+              <button class="mini-button" id="liftTimerPause" type="button">Stop</button>
+              <button class="mini-button" id="liftTimerSkip" type="button">Next</button>
+              <span id="liftTimerCount">0 sets</span>
+            </div>
+            <div class="lift-timer-history" id="liftTimerHistory"></div>
+          </div>
+          <div class="list-panel workout-plan-panel">
+            <div class="section-heading">
+              <h2>Weekly plan</h2>
+              <button class="mini-button workout-plan-edit" id="workoutPlanFallbackEdit" type="button">Edit</button>
+            </div>
+            <div class="workout-plan" id="workoutPlan">
+              <details class="workout-day" open>
+                <summary><span>Monday</span><strong>Push</strong></summary>
+                <div class="workout-exercises">
+                  <div class="workout-exercise"><div><strong>Cable Fly</strong><small>3 x 10</small></div><span>17.5 lb</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="17.5" aria-label="Cable Fly weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Dips</strong><small>3 x 12</small></div><span>Bodyweight</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" aria-label="Dips weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Bench Press</strong><small>3 x 10, 45 deg incline</small></div><span>Barbell + 50 lb plate</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="50" aria-label="Bench Press weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Dumbbell Fly</strong><small>3 x 15, 30 deg incline</small></div><span>25 lb</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="25" aria-label="Dumbbell Fly weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Dumbbell Shoulder Press</strong><small>3 x 10, 60 deg incline</small></div><span>45 lb</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="45" aria-label="Dumbbell Shoulder Press weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Katana Tricep Extension</strong><small>3 x 10</small></div><span>27.5 lb</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="27.5" aria-label="Katana Tricep Extension weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                </div>
+              </details>
+              <details class="workout-day">
+                <summary><span>Tuesday</span><strong>Pull</strong></summary>
+                <div class="workout-exercises">
+                  <div class="workout-exercise"><div><strong>Lat Pulldown</strong><small>3 x 10</small></div><span>190 lb</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="190" aria-label="Lat Pulldown weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Bent Over Row</strong><small>3 x 10, chest supported</small></div><span>Barbell + 55 lb plate</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="55" aria-label="Bent Over Row weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Lat Pullover</strong><small>3 x 10</small></div><span>72.5 lb</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="72.5" aria-label="Lat Pullover weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Rear Delt Flies</strong><small>2 x 15</small></div><span>17.5 lb</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="17.5" aria-label="Rear Delt Flies weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                </div>
+              </details>
+              <details class="workout-day">
+                <summary><span>Wednesday</span><strong>Leg</strong></summary>
+                <div class="workout-exercises">
+                  <div class="workout-exercise"><div><strong>RDL</strong><small>3 x 6-8</small></div><span>40 lb each dumbbell / bar + 90 lb</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="40" aria-label="RDL weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Squat</strong><small>2 x 6-8</small></div><span>Bar + 75 lb</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="75" aria-label="Squat weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Bulgarian Split Squat</strong><small>Sets not set</small></div><span>50 lb dumbbell</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="50" aria-label="Bulgarian Split Squat weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Reverse Nordic Curl</strong><small>2 x 6-8</small></div><span>Bodyweight</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" aria-label="Reverse Nordic Curl weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                </div>
+              </details>
+              <details class="workout-day">
+                <summary><span>Thursday</span><strong>Cardio</strong></summary>
+                <div class="workout-exercises">
+                  <div class="workout-exercise"><div><strong>Cardio</strong><small>Open session</small></div><span></span></div>
+                </div>
+              </details>
+              <details class="workout-day">
+                <summary><span>Friday</span><strong>Push</strong></summary>
+                <div class="workout-exercises">
+                  <div class="workout-exercise"><div><strong>Same as Monday Push</strong><small>Repeat push workout</small></div><span></span></div>
+                </div>
+              </details>
+              <details class="workout-day">
+                <summary><span>Saturday</span><strong>Pull</strong></summary>
+                <div class="workout-exercises">
+                  <div class="workout-exercise"><div><strong>Same as Tuesday Pull</strong><small>Repeat pull workout</small></div><span></span></div>
+                </div>
+              </details>
+              <details class="workout-day">
+                <summary><span>Sunday</span><strong>Rest</strong></summary>
+                <div class="workout-exercises">
+                  <div class="workout-exercise"><div><strong>Rest</strong><small>Recovery day</small></div><span></span></div>
+                </div>
+              </details>
+              <details class="workout-day">
+                <summary><span>Accessory</span><strong>Abs / Forearm</strong></summary>
+                <div class="workout-exercises">
+                  <div class="workout-exercise"><div><strong>Cable Crunch</strong><small>3 x 10</small></div><span>85 lb</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="85" aria-label="Cable Crunch weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Forearm Flexor</strong><small>Sets/reps not set</small></div><span>45 lb</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="45" aria-label="Forearm Flexor weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Forearm Extensor Cable</strong><small>Sets/reps not set</small></div><span>32.5 lb</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="32.5" aria-label="Forearm Extensor Cable weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                  <div class="workout-exercise"><div><strong>Hammer Curls</strong><small>Sets/reps not set</small></div><span>30 lb dumbbell</span><div class="plan-lift-progress"><input class="plan-lift-weight" type="number" min="0" step="2.5" inputmode="decimal" value="30" aria-label="Hammer Curls weight" /><button class="mini-button plan-lift-save" type="button">Save</button></div></div>
+                </div>
+              </details>
+            </div>
+          </div>
+          <form class="entry-form manual-lift-form" id="liftForm" hidden>
+            <label>
+              Date
+              <input id="liftDate" type="date" required />
+            </label>
+            <label>
+              Exercise
+              <input id="liftExercise" type="text" placeholder="Bench press" required />
+            </label>
+            <div class="form-row">
+              <label>
+                Sets
+                <input id="liftSets" type="number" min="1" step="1" value="3" required />
+              </label>
+              <label>
+                Reps
+                <input id="liftReps" type="number" min="1" step="1" value="8" required />
+              </label>
+              <label>
+                Weight
+                <input id="liftWeight" type="number" min="0" step="2.5" placeholder="135" required />
+              </label>
+            </div>
+            <button class="primary-button" type="submit">Add lift</button>
+          </form>
+          <div class="list-panel">
+            <div class="section-heading">
+              <h2>Lift log</h2>
+              <span id="liftCount">0 sessions</span>
+            </div>
+            <div class="entry-list" id="liftList"></div>
+          </div>
+        </section>
+
+        <section class="screen" id="caloriesScreen" aria-labelledby="caloriesTab">
+          <section class="nutrition-dashboard-panel">
+            <section class="day-switcher" aria-label="Food log day">
+              <div class="day-switcher-head">
+                <button class="week-button" id="previousFoodWeek" type="button" aria-label="Previous day">‹</button>
+                <strong id="foodWeekLabel">This week</strong>
+                <button class="week-button" id="nextFoodWeek" type="button" aria-label="Next day">›</button>
+                <button class="calendar-button" id="calendarJumpButton" type="button" aria-label="Jump to date"></button>
+                <button class="today-button" id="todayFoodButton" type="button" aria-label="Jump to today">Today</button>
+              </div>
+              <input class="calendar-input" id="foodDatePicker" type="date" aria-label="Choose food log date" />
+              <div class="day-strip" id="foodDayStrip" aria-label="Food log dates">
+                <div class="day-track" id="foodDayTrack"></div>
+              </div>
+            </section>
+
+            <section class="nutrition-tracker">
+              <div class="section-heading">
+                <h2>Tracker</h2>
+                <span><span id="trackerHeaderDateLabel">Today</span> · <span id="trackerGoal">0 / 0 cal</span></span>
+              </div>
+            <div class="tracker-calories tracker-ring-card" style="--tracker-progress: 0%">
+              <div class="tracker-ring" aria-hidden="true"></div>
+              <div class="tracker-ring-label" aria-hidden="true">
+                <strong id="trackerPercent">0%</strong>
+                <small>of goal</small>
+              </div>
+              <div class="tracker-ring-content">
+                <span id="trackerDateLabel">Today</span>
+                <strong id="trackerCalories">0 cal</strong>
+                <small id="trackerCalorieGoal">0 / 0 cal</small>
+              </div>
+            </div>
+            <div class="macro-grid">
+              <div class="macro-card tracker-ring-card macro-protein" style="--tracker-progress: 0%">
+                <div class="tracker-ring" aria-hidden="true"></div>
+                <div class="tracker-ring-content">
+                  <span class="macro-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path d="M5 13.5c0-4.2 3.4-7.5 7.5-7.5H18v4.8h-5.3a2.7 2.7 0 0 0 0 5.4H18V21h-5.5C8.4 21 5 17.7 5 13.5Z" />
+                      <path d="M8.5 3.8c1.2-.7 2.8-.7 4 0" />
+                    </svg>
+                  </span>
+                  <span>Protein</span>
+                  <strong id="trackerProtein">0g</strong>
+                  <small id="trackerProteinGoal">0 / 0g</small>
+                </div>
+              </div>
+              <div class="macro-card tracker-ring-card macro-carbs" style="--tracker-progress: 0%">
+                <div class="tracker-ring" aria-hidden="true"></div>
+                <div class="tracker-ring-content">
+                  <span class="macro-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path d="M12 21V5" />
+                      <path d="M12 8c-3.2 0-5-1.5-5-4 3.2 0 5 1.5 5 4Z" />
+                      <path d="M12 12c-3.2 0-5-1.5-5-4 3.2 0 5 1.5 5 4Z" />
+                      <path d="M12 16c-3.2 0-5-1.5-5-4 3.2 0 5 1.5 5 4Z" />
+                      <path d="M12 10c3.2 0 5-1.5 5-4-3.2 0-5 1.5-5 4Z" />
+                      <path d="M12 14c3.2 0 5-1.5 5-4-3.2 0-5 1.5-5 4Z" />
+                      <path d="M12 18c3.2 0 5-1.5 5-4-3.2 0-5 1.5-5 4Z" />
+                    </svg>
+                  </span>
+                  <span>Carbs</span>
+                  <strong id="trackerCarbs">0g</strong>
+                  <small id="trackerCarbGoal">0 / 0g</small>
+                </div>
+              </div>
+              <div class="macro-card tracker-ring-card macro-fat" style="--tracker-progress: 0%">
+                <div class="tracker-ring" aria-hidden="true"></div>
+                <div class="tracker-ring-content">
+                  <span class="macro-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path d="M12 3.5s6 6.1 6 10.6A6 6 0 0 1 6 14.1c0-4.5 6-10.6 6-10.6Z" />
+                      <path d="M9.5 15.2c.5 1.2 1.5 1.8 2.8 1.8" />
+                    </svg>
+                  </span>
+                  <span>Fat</span>
+                  <strong id="trackerFat">0g</strong>
+                  <small id="trackerFatGoal">0 / 0g</small>
+                </div>
+              </div>
+            </div>
+            <details class="micro-panel">
+              <summary>Micros</summary>
+              <div class="micro-grid">
+                <div><span>Fiber</span><strong id="trackerFiber">0g</strong></div>
+                <div><span>Sugar</span><strong id="trackerSugar">0g</strong></div>
+                <div><span>Sodium</span><strong id="trackerSodium">0mg</strong></div>
+                <div><span>Potassium</span><strong id="trackerPotassium">0mg</strong></div>
+              </div>
+            </details>
+            </section>
+          </section>
+
+          <div class="list-panel log-food-panel">
+            <div class="section-heading">
+              <h2>Log food</h2>
+              <button class="plus-button" id="logFoodButton" type="button" aria-label="Add food">+</button>
+            </div>
+            <div class="action-menu quick-search-menu" id="logFoodActions" hidden>
+              <input id="savedMenuSearch" type="search" placeholder="Search saved menu" aria-label="Search saved menu" />
+              <button class="small-plus-button" type="button" id="addMenuButton" aria-label="Create menu">+</button>
+            </div>
+            <div class="quick-meal-picker" id="quickMealPicker" hidden></div>
+            <div class="section-heading sub-heading">
+              <h2>Today&apos;s food</h2>
+              <span id="dietCount">0 items</span>
+            </div>
+            <div class="entry-list" id="dietList"></div>
+          </div>
+
+          <section class="list-panel menu-panel" id="fridgePanel">
+            <div class="section-heading">
+              <h2>Refrigerator</h2>
+              <span id="mealLibraryCount">0 items</span>
+            </div>
+            <div class="fridge-toolbar">
+              <input id="mealSearch" type="search" placeholder="Search refrigerator" aria-label="Search refrigerator" />
+              <button class="primary-button small-primary" id="fridgeAddMenuButton" type="button">Add menu</button>
+            </div>
+            <div class="fridge-category-tabs" id="mealCategoryFilters" aria-label="Refrigerator categories"></div>
+            <div class="entry-list" id="mealList"></div>
+          </section>
+
+          <div hidden>
+            <span id="recommendCount">0 matches</span>
+            <textarea id="pantryInput"></textarea>
+            <div id="recommendationList"></div>
+          </div>
+        </section>
+
+        <section class="screen" id="settingsScreen" aria-labelledby="settingsTab">
+          <div class="list-panel readiness-panel">
+            <div class="section-heading">
+              <h2>iPhone ready</h2>
+              <span id="phoneReadyStatus">Checking</span>
+            </div>
+            <div class="readiness-grid">
+              <div>
+                <span>Install</span>
+                <strong id="installStatus">Web app</strong>
+              </div>
+              <div>
+                <span>Phone link</span>
+                <strong id="phoneLinkStatus">Checking</strong>
+              </div>
+              <div>
+                <span>Backup</span>
+                <strong id="backupStatus">Not exported</strong>
+              </div>
+              <div>
+                <span>Last saved</span>
+                <strong id="lastSavedStatus">Just now</strong>
+              </div>
+              <div>
+                <span>Streak</span>
+                <strong id="settingsStreak">0 days</strong>
+              </div>
+            </div>
+            <p class="readiness-note" id="backupDetail">Export a backup before you start using this every day.</p>
+          </div>
+          <button class="settings-row-button" id="settingsGoalButton" type="button">
+            <span>
+              <strong>Daily goals</strong>
+              <small id="settingsGoalSummary">2,310 cal · 170P 250C 70F</small>
+            </span>
+            <span aria-hidden="true">›</span>
+          </button>
+          <div class="list-panel">
+            <div class="section-heading">
+              <h2>Daily progress</h2>
+              <span id="dailyProgressCount">0 days</span>
+            </div>
+            <div class="daily-progress-list" id="dailyProgressList"></div>
+          </div>
+          <div class="list-panel">
+            <div class="section-heading">
+              <h2>Data</h2>
+              <span>Local to this device</span>
+            </div>
+            <div class="settings-actions">
+              <button class="secondary-button" id="exportDataButton" type="button">Export backup</button>
+              <label class="secondary-button import-backup-button">
+                Import backup
+                <input id="importDataInput" type="file" accept="application/json,.json" />
+              </label>
+              <button class="danger-button" id="clearButton" type="button">Clear profile data</button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <nav class="tabbar" aria-label="Primary">
+        <button class="tab active" id="dashboardTab" type="button" data-screen="dashboard" data-title="Dashboard">
+          <span aria-hidden="true">⌂</span>
+          Dashboard
+        </button>
+        <button class="tab" id="caloriesTab" type="button" data-screen="calories" data-title="Calories">
+          <span aria-hidden="true">◐</span>
+          Calories
+        </button>
+        <button class="tab" id="weightTab" type="button" data-screen="weight" data-title="Weight">
+          <span aria-hidden="true">◇</span>
+          Weight
+        </button>
+        <button class="tab" id="liftsTab" type="button" data-screen="lifts" data-title="Lifts">
+          <span aria-hidden="true">▥</span>
+          Lifts
+        </button>
+        <button class="tab" id="settingsTab" type="button" data-screen="settings" data-title="Settings">
+          <span aria-hidden="true">⚙</span>
+          Settings
+        </button>
+      </nav>
+    </div>
+
+    <div class="sheet-backdrop" id="mealSheet" aria-hidden="true">
+      <form class="entry-form nested-form meal-sheet" id="mealForm" hidden>
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="sheet-heading">
+          <div>
+            <p class="eyebrow">Refrigerator</p>
+            <h2 id="mealFormTitle">Create menu</h2>
+          </div>
+          <button class="sheet-close" id="cancelMealEdit" type="button" aria-label="Close menu builder">×</button>
+        </div>
+        <label>
+          Saved menu name
+          <input id="mealName" type="text" placeholder="Turkey rice bowl" />
+        </label>
+        <label>
+          Menu section
+          <select id="mealCategory">
+            <option value="drinks">Drinks</option>
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch" selected>Lunch</option>
+            <option value="dinner">Dinner</option>
+            <option value="snacks">Snack</option>
+          </select>
+        </label>
+        <div class="ingredient-builder">
+          <div class="section-heading compact-heading">
+            <h2>Ingredients</h2>
+          </div>
+          <div class="ingredient-list" id="ingredientList"></div>
+          <button class="secondary-button" id="addIngredientButton" type="button">Add ingredient</button>
+          <div class="meal-totals">
+            <span>Meal total</span>
+            <strong id="mealTotals">0 cal · 0P 0C 0F</strong>
+          </div>
+        </div>
+        <label class="photo-field">
+          Menu or food photo
+          <input id="mealPhoto" type="file" accept="image/*" capture="environment" />
+          <span class="photo-button">Take photo</span>
+        </label>
+        <div class="photo-preview" id="mealPhotoPreview" hidden></div>
+        <button class="primary-button" id="saveMealButton" type="button">Save menu</button>
+      </form>
+    </div>
+
+    <div class="sheet-backdrop" id="foodLogSheet" aria-hidden="true">
+      <section class="food-log-sheet" role="dialog" aria-modal="true" aria-labelledby="foodLogSheetTitle" hidden>
+        <div class="sheet-heading">
+          <div>
+            <p class="eyebrow">Refrigerator</p>
+            <h2 id="foodLogSheetTitle">Log food</h2>
+          </div>
+          <button class="sheet-close" id="foodLogSheetClose" type="button" aria-label="Close food logger">×</button>
+        </div>
+        <div class="food-log-sheet-grid">
+          <section class="custom-food-card">
+            <div class="section-heading">
+              <h2>Custom food</h2>
+              <span>One-time log</span>
+            </div>
+            <div class="custom-food-fields">
+              <label class="custom-food-name-field">
+                Name
+                <input id="customFoodName" type="text" placeholder="Chamoe" />
+              </label>
+              <div class="custom-barcode-tools">
+                <button class="secondary-button" id="customFoodScanBarcode" type="button">Take barcode photo</button>
+                <input id="customFoodBarcodePhoto" type="file" accept="image/*" capture="environment" hidden />
+                <span class="custom-barcode-manual">
+                  <input id="customFoodBarcode" type="text" inputmode="numeric" placeholder="Barcode" aria-label="Barcode number" />
+                  <button class="secondary-button" id="customFoodBarcodeLookup" type="button">Lookup</button>
+                </span>
+              </div>
+              <label class="custom-calorie-field">
+                Calories
+                <span class="custom-unit-input">
+                  <input id="customFoodCalories" type="number" inputmode="decimal" min="0" step="1" placeholder="0" />
+                  <span>cal</span>
+                </span>
+                <small id="customFoodCalculatedCalories">Macro estimate: 0 cal</small>
+              </label>
+              <label class="custom-macro-field">
+                Protein
+                <span class="custom-unit-input">
+                  <input id="customFoodProtein" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0" />
+                  <span>g</span>
+                </span>
+              </label>
+              <label class="custom-macro-field">
+                Carbs
+                <span class="custom-unit-input">
+                  <input id="customFoodCarbs" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0" />
+                  <span>g</span>
+                </span>
+              </label>
+              <label class="custom-macro-field">
+                Fat
+                <span class="custom-unit-input">
+                  <input id="customFoodFat" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0" />
+                  <span>g</span>
+                </span>
+              </label>
+            </div>
+            <button class="primary-button" id="logCustomFoodButton" type="button">Log custom food</button>
+          </section>
+
+          <section class="saved-menu-card">
+            <div class="section-heading">
+              <h2>Refrigerator</h2>
+              <span id="foodLogMenuCount">0 items</span>
+            </div>
+            <input id="foodLogMenuSearch" type="search" placeholder="Search refrigerator" aria-label="Search refrigerator" />
+            <div class="fridge-category-tabs" id="foodLogCategoryFilters" aria-label="Food log refrigerator categories"></div>
+            <div class="food-log-menu-list" id="foodLogMenuList"></div>
+          </section>
+        </div>
+      </section>
+    </div>
+
+    <div class="sheet-backdrop" id="settingsGoalSheet" aria-hidden="true">
+      <section class="settings-goal-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsGoalSheetTitle" hidden>
+        <div class="sheet-heading">
+          <div>
+            <p class="eyebrow">Settings</p>
+            <h2 id="settingsGoalSheetTitle">Daily goals</h2>
+          </div>
+          <button class="sheet-close" id="settingsGoalClose" type="button" aria-label="Close daily goals">×</button>
+        </div>
+        <form class="settings-goal-form" id="settingsForm">
+          <label>
+            Daily calorie goal
+            <input id="goalCalories" type="number" inputmode="decimal" min="500" step="0.1" value="2310" required />
+            <span class="field-note">Set calories directly. Macro suggestions use 4 cal/g for protein and carbs, 9 cal/g for fat.</span>
+          </label>
+          <label class="macro-setting-label">
+            <span class="setting-label-row">
+              <span>Daily protein goal</span>
+              <span class="macro-calorie-note" id="goalProteinCalories">680 cal</span>
+            </span>
+            <span class="unit-input">
+              <input id="goalProtein" type="number" inputmode="decimal" min="0" step="0.1" required />
+              <span>g</span>
+            </span>
+            <button class="macro-suggestion" type="button" data-suggest-goal="protein" hidden></button>
+          </label>
+          <label class="macro-setting-label">
+            <span class="setting-label-row">
+              <span>Daily carb goal</span>
+              <span class="macro-calorie-note" id="goalCarbCalories">1000 cal</span>
+            </span>
+            <span class="unit-input">
+              <input id="goalCarbs" type="number" inputmode="decimal" min="0" step="0.1" required />
+              <span>g</span>
+            </span>
+            <button class="macro-suggestion" type="button" data-suggest-goal="carbs" hidden></button>
+          </label>
+          <label class="macro-setting-label">
+            <span class="setting-label-row">
+              <span>Daily fat goal</span>
+              <span class="macro-calorie-note" id="goalFatCalories">630 cal</span>
+            </span>
+            <span class="unit-input">
+              <input id="goalFat" type="number" inputmode="decimal" min="0" step="0.1" required />
+              <span>g</span>
+            </span>
+            <button class="macro-suggestion" type="button" data-suggest-goal="fat" hidden></button>
+          </label>
+          <label>
+            Weight unit
+            <select id="weightUnit">
+              <option value="lb">lb</option>
+              <option value="kg">kg</option>
+            </select>
+          </label>
+          <button class="primary-button" type="submit">Save goals</button>
+        </form>
+      </section>
+    </div>
+
+    <div class="sheet-backdrop calendar-modal-backdrop" id="calendarSheet" aria-hidden="true">
+      <section class="calendar-sheet" role="dialog" aria-modal="true" aria-labelledby="calendarSheetTitle" hidden>
+        <div class="calendar-sheet-head">
+          <button class="week-button" id="calendarPrevMonth" type="button" aria-label="Previous month"></button>
+          <div>
+            <p class="eyebrow">Choose date</p>
+            <h2 id="calendarSheetTitle">Calendar</h2>
+          </div>
+          <button class="week-button" id="calendarNextMonth" type="button" aria-label="Next month"></button>
+        </div>
+        <div class="calendar-weekdays" aria-hidden="true">
+          <span>Sun</span>
+          <span>Mon</span>
+          <span>Tue</span>
+          <span>Wed</span>
+          <span>Thu</span>
+          <span>Fri</span>
+          <span>Sat</span>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="calendar-actions">
+          <button class="secondary-button" id="calendarTodayButton" type="button">Today</button>
+          <button class="primary-button" id="calendarCloseButton" type="button">Done</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="barcode-scanner" id="barcodeScanner" aria-hidden="true">
+      <div class="barcode-camera-shell">
+        <video id="barcodeVideo" playsinline muted></video>
+        <div class="barcode-frame" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </div>
+        <button class="sheet-close scanner-close" id="barcodeScannerClose" type="button" aria-label="Close barcode scanner">×</button>
+        <div class="barcode-manual-entry">
+          <input id="scannerBarcodeInput" type="text" inputmode="numeric" placeholder="Enter barcode number" aria-label="Barcode number" />
+          <button class="primary-button" id="scannerLookupButton" type="button">Lookup</button>
+          <button class="secondary-button" id="scannerPhotoButton" type="button">Camera photo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet-backdrop" id="profileSheet" aria-hidden="true">
+      <section class="profile-sheet" role="dialog" aria-modal="true" aria-labelledby="profileSheetTitle">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="sheet-heading">
+          <div>
+            <p class="eyebrow">Active profile</p>
+            <h2 id="profileSheetTitle">Switch profile</h2>
+          </div>
+          <button class="sheet-close" id="profileCloseButton" type="button" aria-label="Close profile switcher">×</button>
+        </div>
+        <div class="profile-list" id="profileList"></div>
+        <form class="profile-form" id="profileForm">
+          <label>
+            New profile
+            <input id="profileName" type="text" maxlength="24" placeholder="Alex" required />
+          </label>
+          <button class="primary-button" type="submit">Add profile</button>
+        </form>
+      </section>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js?v=218"></script>
+    <script>
+      window.forgeSwitchScreen = function (screen) {
+        var tab = document.querySelector('.tab[data-screen="' + screen + '"]');
+        if (!tab) return false;
+        document.querySelectorAll(".tab").forEach(function (item) {
+          item.classList.toggle("active", item === tab);
+        });
+        document.querySelectorAll(".screen").forEach(function (item) {
+          item.classList.toggle("active", item.id === screen + "Screen");
+        });
+        var title = document.querySelector("#screenTitle");
+        if (title) title.textContent = tab.dataset.title || screen;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return false;
+      };
+
+      document.addEventListener("click", function (event) {
+        var tab = event.target.closest(".tab[data-screen]");
+        if (!tab) return;
+        event.preventDefault();
+        window.forgeSwitchScreen(tab.dataset.screen);
+      });
+
+      var params = new URLSearchParams(window.location.search);
+      var targetScreen = params.get("screen") || window.location.hash.replace("#", "");
+      if (targetScreen) {
+        window.forgeSwitchScreen(targetScreen);
+        params.delete("screen");
+        var cleanSearch = params.toString();
+        window.history.replaceState({}, "", window.location.pathname + (cleanSearch ? "?" + cleanSearch : ""));
+      } else {
+        window.forgeSwitchScreen("dashboard");
+      }
+    </script>
+    <script>
+      (function () {
+        if (window.FORGE_APP_LOADED) return;
+        var STORAGE_KEY = "forgeFitnessProfiles";
+
+        function today() {
+          var date = new Date();
+          var localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+          return localDate.toISOString().slice(0, 10);
+        }
+
+        var fallbackSelectedFoodDate = today();
+        var fallbackLastKnownDate = today();
+
+        function addDays(value, amount) {
+          var date = new Date(value + "T12:00:00");
+          date.setDate(date.getDate() + amount);
+          return date.toISOString().slice(0, 10);
+        }
+
+        function weekStart(value) {
+          var date = new Date(value + "T12:00:00");
+          date.setDate(date.getDate() - date.getDay());
+          return date.toISOString().slice(0, 10);
+        }
+
+        function formatFoodDay(value) {
+          if (value === today()) return "Today";
+          return new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric" }).format(new Date(value + "T12:00:00"));
+        }
+
+        function fallbackDayTotals(data, date) {
+          return (data.foods || []).filter(function (food) {
+            return food.date === date;
+          }).reduce(function (total, food) {
+            total.calories += Number(food.calories) || 0;
+            total.protein += Number(food.protein) || 0;
+            total.carbs += Number(food.carbs) || 0;
+            total.fat += Number(food.fat) || 0;
+            return total;
+          }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+        }
+
+        function uid() {
+          return (window.crypto && window.crypto.randomUUID && window.crypto.randomUUID()) || String(Date.now()) + "-" + String(Math.random());
+        }
+
+        function readStore() {
+          try {
+            var stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            if (stored && stored.profiles && stored.profiles.length) return stored;
+          } catch (error) {
+            // Keep the fallback quiet.
+          }
+          return null;
+        }
+
+        function writeStore(store) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+        }
+
+        function activeData(store) {
+          if (!store) return null;
+          var profile = store.profiles.find(function (item) {
+            return item.id === store.activeProfileId;
+          }) || store.profiles[0];
+          profile.data = profile.data || {};
+          profile.data.foods = Array.isArray(profile.data.foods) ? profile.data.foods : [];
+          profile.data.meals = Array.isArray(profile.data.meals) ? profile.data.meals : [];
+          profile.data.completedFoodDays = Array.isArray(profile.data.completedFoodDays) ? profile.data.completedFoodDays : [];
+          return profile.data;
+        }
+
+        function renderFallbackLiveTime() {
+          var node = document.querySelector("#liveDateTime");
+          if (!node) return;
+          node.textContent = new Intl.DateTimeFormat(undefined, {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit"
+          }).format(new Date());
+        }
+
+        function renderFallbackFoodDayControls() {
+          var store = readStore();
+          var data = activeData(store);
+          var strip = document.querySelector("#foodDayStrip");
+          var track = document.querySelector("#foodDayTrack") || strip;
+          var weekLabel = document.querySelector("#foodWeekLabel");
+          var picker = document.querySelector("#foodDatePicker");
+          if (picker) picker.value = fallbackSelectedFoodDate;
+          if (strip && track && data) {
+            track.innerHTML = "";
+            var start = addDays(fallbackSelectedFoodDate, -2);
+            if (weekLabel) {
+              weekLabel.textContent = formatFoodDay(fallbackSelectedFoodDate);
+            }
+            var goals = data.settings || {};
+            var calorieGoal = Number(goals.calorieGoal) || fallbackMacroCalorieGoal(goals);
+            var proteinGoal = Number(goals.proteinGoal) || 170;
+            var carbGoal = Number(goals.carbGoal) || 250;
+            var fatGoal = Number(goals.fatGoal) || 70;
+            function barHeight(value, goal) {
+              if (!value) return 3;
+              return Math.max(8, Math.min(34, Math.round((value / goal) * 34)));
+            }
+            for (var offset = 0; offset <= 4; offset += 1) {
+              var date = addDays(start, offset);
+              var dayButton = document.createElement("button");
+              var totals = fallbackDayTotals(data, date);
+              dayButton.className = "day-square" + (date === fallbackSelectedFoodDate ? " active" : "") + (date === today() ? " today" : "");
+              dayButton.type = "button";
+              dayButton.dataset.date = date;
+              var dayLabel = date === today() ? "Today" : new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(new Date(date + "T12:00:00"));
+              var dateLabel = new Intl.DateTimeFormat(undefined, { day: "numeric" }).format(new Date(date + "T12:00:00"));
+              dayButton.innerHTML =
+                '<span class="day-label">' +
+                dayLabel +
+                "</span><strong>" +
+                dateLabel +
+                "</strong><small>" +
+                (totals.calories ? number(totals.calories) : "") +
+                '</small><div class="day-mini-chart" aria-hidden="true">' +
+                '<i class="calorie-bar" style="height:' + barHeight(totals.calories, calorieGoal) + 'px"></i>' +
+                '<i class="protein-bar" style="height:' + barHeight(totals.protein, proteinGoal) + 'px"></i>' +
+                '<i class="carb-bar" style="height:' + barHeight(totals.carbs, carbGoal) + 'px"></i>' +
+                '<i class="fat-bar" style="height:' + barHeight(totals.fat, fatGoal) + 'px"></i>' +
+                "</div>";
+              dayButton.addEventListener("click", function () {
+                fallbackSelectedFoodDate = this.dataset.date;
+                renderFallbackTodayFood();
+              });
+              track.appendChild(dayButton);
+            }
+          }
+        }
+
+        function number(value) {
+          return Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 1 });
+        }
+
+        function fallbackMacroCalorieGoal(settings) {
+          settings = settings || {};
+          return (Number(settings.proteinGoal) || 170) * 4 + (Number(settings.carbGoal) || 250) * 4 + (Number(settings.fatGoal) || 70) * 9;
+        }
+
+        function nutritionFromMeal(meal) {
+          return {
+            calories: Number(meal.calories) || 0,
+            protein: Number(meal.protein) || 0,
+            carbs: Number(meal.carbs) || 0,
+            fat: Number(meal.fat) || 0,
+            fiber: Number(meal.fiber) || 0,
+            sugar: Number(meal.sugar) || 0,
+            sodium: Number(meal.sodium) || 0,
+            potassium: Number(meal.potassium) || 0
+          };
+        }
+
+        function fallbackFoodLogFromMeal(meal) {
+          var base = nutritionFromMeal(meal);
+          return Object.assign({
+            id: uid(),
+            date: fallbackSelectedFoodDate,
+            createdAt: new Date().toISOString(),
+            source: "saved-menu",
+            name: meal.name || "Saved menu",
+            servingMode: "serving",
+            servingCount: 1,
+            weightAmount: 0,
+            weightUnit: "g",
+            baseNutrition: base,
+            ingredients: Array.isArray(meal.ingredients) ? JSON.parse(JSON.stringify(meal.ingredients)) : [],
+            mealId: meal.id || "",
+            photo: meal.photo || ""
+          }, base);
+        }
+
+        function fallbackFoodTotals(data) {
+          return (data.foods || []).filter(function (food) {
+            return food.date === fallbackSelectedFoodDate;
+          }).reduce(function (totals, food) {
+            totals.calories += Number(food.calories) || 0;
+            totals.protein += Number(food.protein) || 0;
+            totals.carbs += Number(food.carbs) || 0;
+            totals.fat += Number(food.fat) || 0;
+            totals.fiber += Number(food.fiber) || 0;
+            totals.sugar += Number(food.sugar) || 0;
+            totals.sodium += Number(food.sodium) || 0;
+            totals.potassium += Number(food.potassium) || 0;
+            return totals;
+          }, { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, sodium: 0, potassium: 0 });
+        }
+
+        function renderFallbackTracker() {
+          var store = readStore();
+          var data = activeData(store);
+          if (!data) return;
+          data.settings = data.settings || {};
+          var totals = fallbackFoodTotals(data);
+          var goal = Number(data.settings.calorieGoal) || fallbackMacroCalorieGoal(data.settings);
+          var proteinGoal = Number(data.settings.proteinGoal) || 170;
+          var carbGoal = Number(data.settings.carbGoal) || 250;
+          var fatGoal = Number(data.settings.fatGoal) || 70;
+          var percent = Math.min(100, Math.round((totals.calories / goal) * 100) || 0);
+          var remainingCalories = Math.max(0, goal - totals.calories);
+          var trackerGoal = document.querySelector("#trackerGoal");
+          var trackerDateLabel = document.querySelector("#trackerDateLabel");
+          var trackerHeaderDateLabel = document.querySelector("#trackerHeaderDateLabel");
+          var trackerPercent = document.querySelector("#trackerPercent");
+          var trackerCalories = document.querySelector("#trackerCalories");
+          var trackerCalorieGoal = document.querySelector("#trackerCalorieGoal");
+          var trackerCaloriesCard = document.querySelector(".tracker-calories");
+          if (trackerDateLabel) trackerDateLabel.textContent = formatFoodDay(fallbackSelectedFoodDate);
+          if (trackerHeaderDateLabel) trackerHeaderDateLabel.textContent = formatFoodDay(fallbackSelectedFoodDate);
+          if (trackerPercent) trackerPercent.textContent = percent + "%";
+          if (trackerGoal) trackerGoal.textContent = number(totals.calories) + " / " + number(goal) + " cal";
+          if (trackerCalories) trackerCalories.textContent = number(remainingCalories) + " cal left";
+          if (trackerCalorieGoal) trackerCalorieGoal.textContent = number(totals.calories) + " / " + number(goal) + " cal";
+          if (trackerCaloriesCard) trackerCaloriesCard.style.setProperty("--tracker-progress", percent + "%");
+          [["#trackerProtein", totals.protein, proteinGoal, "#trackerProteinGoal"], ["#trackerCarbs", totals.carbs, carbGoal, "#trackerCarbGoal"], ["#trackerFat", totals.fat, fatGoal, "#trackerFatGoal"]].forEach(function (item) {
+            var node = document.querySelector(item[0]);
+            var goalNode = document.querySelector(item[3]);
+            var card = node ? node.closest(".tracker-ring-card") : null;
+            var macroPercent = Math.min(100, Math.round((item[1] / item[2]) * 100) || 0);
+            if (node) node.textContent = number(item[1]) + "g";
+            if (goalNode) goalNode.textContent = number(item[1]) + " / " + number(item[2]) + "g";
+            if (card) card.style.setProperty("--tracker-progress", macroPercent + "%");
+          });
+          [["#trackerFiber", totals.fiber, "g"], ["#trackerSugar", totals.sugar, "g"], ["#trackerSodium", totals.sodium, "mg"], ["#trackerPotassium", totals.potassium, "mg"]].forEach(function (item) {
+            var node = document.querySelector(item[0]);
+            if (node) node.textContent = number(item[1]) + item[2];
+          });
+          var trendTitle = document.querySelector("#nutritionTrendTitle");
+          var trendValue = document.querySelector("#nutritionTrendValue");
+          var trendGoal = document.querySelector("#nutritionTrendGoal");
+          if (trendTitle) trendTitle.textContent = formatFoodDay(fallbackSelectedFoodDate);
+          if (trendValue) trendValue.textContent = number(totals.calories) + " cal";
+          if (trendGoal) trendGoal.textContent = number(totals.calories) + " / " + number(goal) + " cal";
+          var canvas = document.querySelector("#nutritionTrendChart");
+          if (canvas && canvas.getContext) {
+            var ctx = canvas.getContext("2d");
+            var width = Math.floor(canvas.clientWidth || 240);
+            var height = Math.floor(canvas.clientHeight || 118);
+            var ratio = window.devicePixelRatio || 1;
+            canvas.width = width * ratio;
+            canvas.height = height * ratio;
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+            ctx.clearRect(0, 0, width, height);
+            var goals = [goal, proteinGoal, carbGoal, fatGoal];
+            var values = [totals.calories, totals.protein, totals.carbs, totals.fat];
+            var colors = ["#202225", "#555b61", "#9b9184", "#7e8893"];
+            var plotBottom = height - 24;
+            var plotHeight = height - 34;
+            ctx.strokeStyle = "rgba(31,36,32,.12)";
+            ctx.setLineDash([3, 5]);
+            for (var i = 0; i < 6; i += 1) {
+              var x = 16 + i * ((width - 32) / 5);
+              ctx.beginPath();
+              ctx.moveTo(x, 12);
+              ctx.lineTo(x, plotBottom);
+              ctx.stroke();
+            }
+            ctx.setLineDash([]);
+            values.forEach(function (value, index) {
+              if (!value) return;
+              var barHeight = Math.max(4, Math.min(plotHeight, (value / goals[index]) * plotHeight));
+              var x = width / 2 - 16 + index * 8;
+              var gradient = ctx.createLinearGradient(0, plotBottom - barHeight, 0, plotBottom);
+              gradient.addColorStop(0, colors[index]);
+              gradient.addColorStop(1, "rgba(37,88,48,.38)");
+              ctx.fillStyle = gradient;
+              ctx.fillRect(x, plotBottom - barHeight, 6, barHeight);
+            });
+            ctx.fillStyle = "#70746d";
+            ctx.font = "10px system-ui";
+            ctx.fillText("12 AM", 12, height - 8);
+            ctx.fillText("12 PM", width / 2 - 16, height - 8);
+            ctx.fillText("12 AM", width - 46, height - 8);
+          }
+        }
+
+        function renderFallbackTodayFood() {
+          var store = readStore();
+          var data = activeData(store);
+          var list = document.querySelector("#dietList");
+          var count = document.querySelector("#dietCount");
+          if (!data || !list || !count) return;
+          renderFallbackTracker();
+          renderFallbackFoodDayControls();
+          var foods = data.foods.filter(function (food) {
+            return food.date === fallbackSelectedFoodDate;
+          }).sort(function (a, b) {
+            return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+          });
+          count.textContent = foods.length + " " + (foods.length === 1 ? "item" : "items");
+          list.innerHTML = "";
+          if (!foods.length) {
+            list.innerHTML = '<div class="empty-state">' + (fallbackSelectedFoodDate === today() ? "Today&apos;s meals will show up here." : "No food logged for this day.") + '</div>';
+            return;
+          }
+          foods.forEach(function (food) {
+            var row = document.createElement("article");
+            row.className = "log-row food-log-row";
+            row.innerHTML = '<div class="food-log-main"><strong></strong><small></small></div><button class="delete-button delete-food" type="button" aria-label="Delete entry">x</button>';
+            row.querySelector("strong").textContent = food.name || "Food";
+            row.querySelector("small").textContent = number(food.calories) + " cal · " + number(food.protein) + "P " + number(food.carbs) + "C " + number(food.fat) + "F";
+            row.querySelector("button").addEventListener("click", function () {
+              var currentStore = readStore();
+              var currentData = activeData(currentStore);
+              if (!currentStore || !currentData) return;
+              currentData.foods = currentData.foods.filter(function (item) {
+                return item.id !== food.id;
+              });
+              writeStore(currentStore);
+              renderFallbackTodayFood();
+              renderFallbackTracker();
+            });
+            list.append(row);
+          });
+        }
+
+        function renderFallbackPicker() {
+          var picker = document.querySelector("#quickMealPicker");
+          if (!picker || picker.hidden) return;
+          var store = readStore();
+          var data = activeData(store);
+          var meals = data ? data.meals : [];
+          var search = document.querySelector("#savedMenuSearch");
+          var query = search ? search.value.trim().toLowerCase() : "";
+          meals = meals.filter(function (meal) {
+            var text = String(meal.name || "").toLowerCase() + " " + (Array.isArray(meal.ingredients) ? meal.ingredients.map(function (ingredient) {
+              return ingredient.name || "";
+            }).join(" ").toLowerCase() : "");
+            return !query || text.indexOf(query) !== -1;
+          });
+          picker.innerHTML = "";
+          if (!meals.length) {
+            picker.appendChild((function () {
+              var empty = document.createElement("div");
+              empty.className = "empty-state";
+              empty.textContent = query ? "No saved menus match." : "No saved menus yet.";
+              return empty;
+            })());
+            return;
+          }
+          meals.forEach(function (meal) {
+            var row = document.createElement("article");
+            row.className = "quick-meal-row";
+            row.innerHTML = '<div><strong></strong><small></small></div><button class="small-plus-button" type="button" aria-label="Add menu">+</button>';
+            row.querySelector("strong").textContent = meal.name || "Saved menu";
+            row.querySelector("small").textContent = number(meal.calories) + " cal · " + number(meal.protein) + "P " + number(meal.carbs) + "C " + number(meal.fat) + "F";
+            row.querySelector("button").addEventListener("click", function () {
+              var currentStore = readStore();
+              var currentData = activeData(currentStore);
+              if (!currentStore || !currentData) return;
+              currentData.foods.push(fallbackFoodLogFromMeal(meal));
+              writeStore(currentStore);
+              picker.hidden = true;
+              renderFallbackTodayFood();
+              renderFallbackTracker();
+            });
+            picker.append(row);
+          });
+        }
+
+        function openFallbackMealBuilder() {
+          var form = document.querySelector("#mealForm");
+          var sheet = document.querySelector("#mealSheet");
+          var actions = document.querySelector("#logFoodActions");
+          var picker = document.querySelector("#quickMealPicker");
+          if (actions) actions.hidden = true;
+          if (picker) picker.hidden = true;
+          if (sheet) {
+            sheet.classList.add("open");
+            sheet.setAttribute("aria-hidden", "false");
+          }
+          if (form) {
+            form.hidden = false;
+            var name = document.querySelector("#mealName");
+            if (name) name.focus();
+          }
+        }
+
+        document.addEventListener("click", function (event) {
+          var calendar = event.target.closest("#calendarJumpButton");
+          var previousWeek = event.target.closest("#previousFoodWeek");
+          var nextWeek = event.target.closest("#nextFoodWeek");
+          var plus = event.target.closest("#logFoodButton");
+          var addMenu = event.target.closest("#addMenuButton, #fridgeAddMenuButton");
+          var foodLogClose = event.target.closest("#foodLogSheetClose");
+          if (!plus && !addMenu && !calendar && !previousWeek && !nextWeek && !foodLogClose) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+
+          if (foodLogClose) {
+            var closingSheet = document.querySelector("#foodLogSheet");
+            var closingPanel = document.querySelector(".food-log-sheet");
+            if (closingSheet) {
+              closingSheet.classList.remove("open");
+              closingSheet.setAttribute("aria-hidden", "true");
+            }
+            if (closingPanel) closingPanel.hidden = true;
+            return;
+          }
+
+          if (previousWeek) {
+            fallbackSelectedFoodDate = addDays(fallbackSelectedFoodDate, -1);
+            renderFallbackTodayFood();
+            return;
+          }
+          if (nextWeek) {
+            fallbackSelectedFoodDate = addDays(fallbackSelectedFoodDate, 1);
+            renderFallbackTodayFood();
+            return;
+          }
+          if (calendar) {
+            var sheet = document.querySelector("#calendarSheet");
+            var panel = document.querySelector(".calendar-sheet");
+            if (sheet && panel) {
+              panel.hidden = false;
+              sheet.classList.add("open");
+              sheet.setAttribute("aria-hidden", "false");
+            }
+            return;
+          }
+          var actions = document.querySelector("#logFoodActions");
+          var picker = document.querySelector("#quickMealPicker");
+          if (plus && actions) {
+            actions.hidden = true;
+            if (picker) picker.hidden = true;
+            var search = document.querySelector("#savedMenuSearch");
+            if (search) search.value = "";
+            var foodLogSheet = document.querySelector("#foodLogSheet");
+            var foodLogPanel = document.querySelector(".food-log-sheet");
+            if (foodLogSheet && foodLogPanel) {
+              foodLogPanel.hidden = false;
+              foodLogSheet.classList.add("open");
+              foodLogSheet.setAttribute("aria-hidden", "false");
+              var customName = document.querySelector("#customFoodName");
+              if (customName) customName.focus({ preventScroll: true });
+            }
+            return;
+          }
+          if (addMenu) openFallbackMealBuilder();
+        }, true);
+
+        document.addEventListener("input", function (event) {
+          if (!event.target.closest("#savedMenuSearch")) return;
+          var picker = document.querySelector("#quickMealPicker");
+          if (picker) {
+            picker.hidden = false;
+            renderFallbackPicker();
+          }
+        }, true);
+
+        document.addEventListener("change", function (event) {
+          if (!event.target.closest("#foodDatePicker")) return;
+          fallbackSelectedFoodDate = event.target.value || today();
+          renderFallbackTodayFood();
+        }, true);
+
+        function bindFallbackTimeline() {
+          var strip = document.querySelector("#foodDayStrip");
+          if (!strip || strip.dataset.dragBound === "true") return;
+          strip.dataset.dragBound = "true";
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+          renderFallbackLiveTime();
+          renderFallbackTodayFood();
+          renderFallbackTracker();
+          bindFallbackTimeline();
+        });
+        window.setInterval(function () {
+          var currentDate = today();
+          renderFallbackLiveTime();
+          if (currentDate !== fallbackLastKnownDate) {
+            if (fallbackSelectedFoodDate === fallbackLastKnownDate) fallbackSelectedFoodDate = currentDate;
+            fallbackLastKnownDate = currentDate;
+            renderFallbackTodayFood();
+          }
+        }, 1000);
+        renderFallbackLiveTime();
+        renderFallbackTodayFood();
+        renderFallbackTracker();
+      })();
+    </script>
+    <script>
+      (function () {
+        if (window.FORGE_APP_LOADED) return;
+        var STORAGE_KEY = "forgeFitnessProfiles";
+
+        function today() {
+          var date = new Date();
+          var localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+          return localDate.toISOString().slice(0, 10);
+        }
+
+        function uid() {
+          return (window.crypto && window.crypto.randomUUID && window.crypto.randomUUID()) || String(Date.now()) + "-" + String(Math.random());
+        }
+
+        function firstNumber(text) {
+          var match = String(text || "").match(/(\d+(?:\.\d+)?)/);
+          return match ? match[1] : "";
+        }
+
+        function parsePrescription(text) {
+          var match = String(text || "").match(/(\d+)\s*x\s*(\d+)/i);
+          return {
+            sets: match ? Number(match[1]) : 1,
+            reps: match ? Number(match[2]) : 1
+          };
+        }
+
+        function readStore() {
+          try {
+            var stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            if (stored && stored.profiles && stored.profiles.length) return stored;
+          } catch (error) {
+            // Fall through and create a small compatible profile store.
+          }
+          return {
+            activeProfileId: "me",
+            profiles: [
+              {
+                id: "me",
+                name: "Me",
+                data: {
+                  settings: { calorieGoal: 2310, proteinGoal: 170, carbGoal: 250, fatGoal: 70, weightUnit: "lb" },
+                  weights: [],
+                  lifts: [],
+                  liftProgress: {},
+                  foods: [],
+                  meals: [],
+                  pantryIngredients: "",
+                  chart: { range: "days", calories: true, weight: true, lifts: true }
+                }
+              }
+            ]
+          };
+        }
+
+        function showFallbackToast(message) {
+          var toast = document.querySelector("#toast");
+          if (!toast) return;
+          toast.textContent = message;
+          toast.classList.add("show");
+          window.clearTimeout(showFallbackToast.timer);
+          showFallbackToast.timer = window.setTimeout(function () {
+            toast.classList.remove("show");
+          }, 1800);
+        }
+
+        function fallbackPlanId(row, index) {
+          var details = row.closest(".workout-day");
+          var day = details && details.querySelector("summary span") ? details.querySelector("summary span").textContent.trim() : "Plan";
+          var name = row.querySelector("strong") ? row.querySelector("strong").textContent.trim() : "Lift";
+          return day.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + index;
+        }
+
+        function fallbackCommitPlanEdits() {
+          var store = readStore();
+          var active = store.profiles.find(function (profile) {
+            return profile.id === store.activeProfileId;
+          }) || store.profiles[0];
+          active.data = active.data || {};
+          active.data.lifts = Array.isArray(active.data.lifts) ? active.data.lifts : [];
+          active.data.liftProgress = active.data.liftProgress && typeof active.data.liftProgress === "object" ? active.data.liftProgress : {};
+
+          document.querySelectorAll("#workoutPlan .workout-exercise").forEach(function (row, index) {
+            var name = row.querySelector("strong").textContent.trim();
+            var sets = Number(row.querySelector(".plan-lift-sets") && row.querySelector(".plan-lift-sets").textContent.trim()) || 0;
+            var reps = Number(row.querySelector(".plan-lift-reps") && row.querySelector(".plan-lift-reps").textContent.trim()) || 0;
+            var loadText = row.querySelector(":scope > span").textContent.trim();
+            var weight = /bodyweight/i.test(loadText) ? 0 : firstNumber(loadText);
+            if (!name) return;
+
+            var nameEl = row.querySelector("strong");
+            var prescriptionEl = row.querySelector("small");
+            var loadEl = row.querySelector(":scope > span");
+            var prescription = sets && reps ? sets + " x " + reps : "Sets not set";
+            var load = loadEl.textContent.trim();
+            var details = row.closest(".workout-day");
+            var summary = details ? details.querySelector("summary") : null;
+            var day = summary && summary.querySelector("span") ? summary.querySelector("span").textContent.trim().split(" · ")[0] : "Plan";
+            var title = summary && summary.querySelector("strong") ? summary.querySelector("strong").textContent.trim() : "";
+            var planId = fallbackPlanId(row, index);
+
+            nameEl.textContent = name;
+            loadEl.textContent = load;
+            row.querySelectorAll(".plan-editable-field").forEach(function (field) {
+              field.contentEditable = "false";
+            });
+
+            if (weight) {
+              active.data.liftProgress[planId] = {
+                day: day,
+                title: title,
+                exercise: name,
+                order: index + 1,
+                prescription: prescription,
+                weight: weight,
+                updatedAt: today()
+              };
+              active.data.lifts.push({
+                id: uid(),
+                date: today(),
+                exercise: name,
+                sets: sets || 1,
+                reps: reps || 1,
+                weight: weight,
+                load: load,
+                progressWeight: weight,
+                planId: planId,
+                day: day,
+                order: index + 1
+              });
+            }
+          });
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+          showFallbackToast("Plan updated");
+        }
+
+        function fallbackActivateField(field) {
+          var panel = document.querySelector(".workout-plan-panel");
+          if (!panel || !panel.classList.contains("workout-plan-editing")) return;
+          field.contentEditable = "true";
+          field.inputMode = field.classList.contains("plan-lift-sets") || field.classList.contains("plan-lift-reps") ? "numeric" : "text";
+          field.classList.add("editing");
+          field.focus();
+          var selection = window.getSelection();
+          var range = document.createRange();
+          range.selectNodeContents(field);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+
+        function fallbackBindDrag(list) {
+          if (list.dataset.dragBound) return;
+          list.dataset.dragBound = "true";
+          var dragging = null;
+          list.addEventListener("pointerdown", function (event) {
+            var panel = document.querySelector(".workout-plan-panel");
+            if (!panel || !panel.classList.contains("workout-plan-editing")) return;
+            var handle = event.target.closest(".plan-row-handle");
+            if (!handle) return;
+            dragging = handle.closest(".workout-exercise");
+            dragging.classList.add("dragging");
+            handle.setPointerCapture && handle.setPointerCapture(event.pointerId);
+            event.preventDefault();
+          });
+          list.addEventListener("pointermove", function (event) {
+            if (!dragging) return;
+            var siblings = Array.prototype.slice.call(list.querySelectorAll(".workout-exercise:not(.dragging)"));
+            var next = siblings.find(function (sibling) {
+              return event.clientY < sibling.getBoundingClientRect().top + sibling.offsetHeight / 2;
+            });
+            list.insertBefore(dragging, next || null);
+          });
+          list.addEventListener("pointerup", function () {
+            if (!dragging) return;
+            dragging.classList.remove("dragging");
+            dragging = null;
+          });
+        }
+
+        function fallbackBindRow(row) {
+          var nameEl = row.querySelector("strong");
+          var prescriptionEl = row.querySelector("small");
+          var loadEl = row.querySelector(":scope > span");
+          if (row.querySelector(".plan-row-handle")) return;
+
+          var handle = document.createElement("button");
+          handle.className = "plan-row-handle";
+          handle.type = "button";
+          handle.setAttribute("aria-label", "Move workout");
+          handle.textContent = "☰";
+          row.insertBefore(handle, row.firstChild);
+          nameEl.classList.add("plan-editable-field");
+          nameEl.dataset.placeholder = "Workout name";
+          var parsedInitial = parsePrescription(prescriptionEl ? prescriptionEl.textContent.trim() : "");
+          prescriptionEl.classList.add("plan-prescription");
+          prescriptionEl.innerHTML =
+            '<span class="plan-lift-sets plan-editable-field" data-field="sets" data-placeholder="Sets"></span>' +
+            '<span class="plan-x">x</span>' +
+            '<span class="plan-lift-reps plan-editable-field" data-field="reps" data-placeholder="Reps"></span>';
+          prescriptionEl.querySelector(".plan-lift-sets").textContent = parsedInitial.sets || "";
+          prescriptionEl.querySelector(".plan-lift-reps").textContent = parsedInitial.reps || "";
+          loadEl.classList.add("plan-lift-load", "plan-editable-field");
+          loadEl.dataset.placeholder = "Weight";
+          [nameEl, prescriptionEl.querySelector(".plan-lift-sets"), prescriptionEl.querySelector(".plan-lift-reps"), loadEl].forEach(function (field) {
+            field.addEventListener("click", function () {
+              fallbackActivateField(field);
+            });
+            field.addEventListener("keydown", function (event) {
+              if (event.key !== "Enter") return;
+              event.preventDefault();
+              field.blur();
+            });
+            field.addEventListener("blur", function () {
+              field.contentEditable = "false";
+              field.classList.remove("editing");
+            });
+          });
+
+          var removeButton = document.createElement("button");
+          removeButton.className = "plan-remove-button";
+          removeButton.type = "button";
+          removeButton.setAttribute("aria-label", "Remove workout");
+          removeButton.textContent = "−";
+          removeButton.addEventListener("click", function () {
+            var panel = document.querySelector(".workout-plan-panel");
+            if (!panel || !panel.classList.contains("workout-plan-editing")) return;
+            if (!removeButton.classList.contains("confirming")) {
+              removeButton.classList.add("confirming");
+              removeButton.textContent = "Remove";
+              window.setTimeout(function () {
+                removeButton.classList.remove("confirming");
+                removeButton.textContent = "−";
+              }, 2200);
+              return;
+            }
+            row.style.maxHeight = row.offsetHeight + "px";
+            row.classList.add("removing");
+            window.setTimeout(function () {
+              row.remove();
+            }, 220);
+          });
+          row.append(removeButton);
+
+          var existingProgress = row.querySelector(".plan-lift-progress");
+          if (existingProgress) existingProgress.remove();
+        }
+
+        function fallbackAddWorkout(list) {
+          var row = document.createElement("div");
+          row.className = "workout-exercise new-workout-row";
+          row.innerHTML =
+            '<div><strong></strong><small></small></div>' +
+            '<span></span>';
+          list.insertBefore(row, list.querySelector(".plan-add-workout"));
+          fallbackBindRow(row);
+          row.scrollIntoView({ behavior: "smooth", block: "center" });
+          fallbackActivateField(row.querySelector("strong"));
+        }
+
+        function fallbackOpenTodayWorkout() {
+          var todayName = new Intl.DateTimeFormat(undefined, { weekday: "long" }).format(new Date());
+          var days = Array.prototype.slice.call(document.querySelectorAll("#workoutPlan .workout-day"));
+          var matched = false;
+          days.forEach(function (day, index) {
+            var label = day.querySelector("summary span");
+            var text = label ? label.textContent.trim().split(" · ")[0].toLowerCase() : "";
+            var isToday = text === todayName.toLowerCase();
+            day.open = isToday || (!matched && index === 0 && !days.some(function (item) {
+              var itemLabel = item.querySelector("summary span");
+              return itemLabel && itemLabel.textContent.trim().split(" · ")[0].toLowerCase() === todayName.toLowerCase();
+            }));
+            if (isToday) matched = true;
+          });
+        }
+
+        function enhanceWorkoutFallback() {
+          var fallbackEdit = document.querySelector("#workoutPlanFallbackEdit");
+          if (fallbackEdit && !fallbackEdit.dataset.bound) {
+            fallbackEdit.dataset.bound = "true";
+            fallbackEdit.addEventListener("click", function () {
+              var panel = document.querySelector(".workout-plan-panel");
+              var editing = !panel.classList.contains("workout-plan-editing");
+              if (editing) {
+                panel.dataset.beforeEdit = document.querySelector("#workoutPlan").innerHTML;
+                panel.classList.add("workout-plan-editing");
+                fallbackEdit.textContent = "Done";
+                if (!document.querySelector("#workoutPlanFallbackCancel")) {
+                  var cancel = document.createElement("button");
+                  cancel.className = "mini-button workout-plan-cancel";
+                  cancel.id = "workoutPlanFallbackCancel";
+                  cancel.type = "button";
+                  cancel.textContent = "Cancel";
+                  cancel.addEventListener("click", function () {
+                    document.querySelector("#workoutPlan").innerHTML = panel.dataset.beforeEdit || document.querySelector("#workoutPlan").innerHTML;
+                    panel.classList.remove("workout-plan-editing");
+                    fallbackEdit.textContent = "Edit";
+                    cancel.remove();
+                    enhanceWorkoutFallback();
+                    showFallbackToast("Edit canceled");
+                  });
+                  fallbackEdit.parentElement.insertBefore(cancel, fallbackEdit);
+                }
+                return;
+              }
+              fallbackCommitPlanEdits();
+              panel.classList.remove("workout-plan-editing");
+              fallbackEdit.textContent = "Edit";
+              document.querySelector("#workoutPlanFallbackCancel")?.remove();
+            });
+          }
+
+          document.querySelectorAll("#workoutPlan .workout-exercise").forEach(function (row, index) {
+            fallbackBindRow(row);
+          });
+          document.querySelectorAll("#workoutPlan .workout-exercises").forEach(function (list) {
+            if (!list.querySelector(".plan-add-workout")) {
+              var addButton = document.createElement("button");
+              addButton.className = "plan-add-workout";
+              addButton.type = "button";
+              addButton.setAttribute("aria-label", "Add workout");
+              addButton.textContent = "+";
+              addButton.addEventListener("click", function () {
+                fallbackAddWorkout(list);
+              });
+              list.append(addButton);
+            }
+          });
+          document.querySelectorAll("#workoutPlan .workout-exercises").forEach(fallbackBindDrag);
+          fallbackOpenTodayWorkout();
+        }
+
+        window.forgeEnhanceWorkoutFallback = enhanceWorkoutFallback;
+        document.addEventListener("DOMContentLoaded", enhanceWorkoutFallback);
+        enhanceWorkoutFallback();
+      })();
+    </script>
+  </body>
+</html>
