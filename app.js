@@ -132,7 +132,7 @@ const defaultProfileData = {
   pantryIngredients: "",
   chart: {
     range: "weeks",
-    metric: "calories",
+    metric: "weight",
     calories: true,
     weight: true,
     lifts: true,
@@ -2283,7 +2283,7 @@ function drawProgressChart() {
   const step = buckets.length > 1 ? plotWidth / (buckets.length - 1) : 0;
   const xForIndex = (index) => (buckets.length > 1 ? padding.left + index * step : padding.left + plotWidth / 2);
   const labelForBucket = (bucket) => {
-    if (range === "weeks") return new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(new Date(`${bucket.key}T12:00:00`));
+    if (range === "weeks") return new Intl.DateTimeFormat(undefined, { weekday: "narrow" }).format(new Date(`${bucket.key}T12:00:00`));
     if (range === "months") return new Intl.DateTimeFormat(undefined, { month: "numeric", day: "numeric" }).format(new Date(`${bucket.key}T12:00:00`));
     return bucket.label;
   };
@@ -2300,7 +2300,7 @@ function drawProgressChart() {
     ctx.lineTo(x, padding.top + plotHeight + 4);
     ctx.stroke();
     if (index % labelEvery === 0 || index === buckets.length - 1) {
-      ctx.textAlign = index === 0 ? "left" : index === buckets.length - 1 ? "right" : "center";
+      ctx.textAlign = "center";
       ctx.fillText(labelForBucket(bucket), x, padding.top + plotHeight + 7);
     }
   });
@@ -2323,7 +2323,7 @@ function drawProgressChart() {
     ctx.strokeStyle = item.color;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    let lastPoint = null;
+    const drawablePoints = [];
     item.values.forEach((value, index) => {
       if (value === null) {
         started = false;
@@ -2331,7 +2331,7 @@ function drawProgressChart() {
       }
       const x = xForIndex(index);
       const y = padding.top + plotHeight - ((value - axisMin) / spread) * plotHeight;
-      lastPoint = { x, y, value };
+      drawablePoints.push({ x, y, value, index });
       if (!started) {
         ctx.moveTo(x, y);
         started = true;
@@ -2340,12 +2340,14 @@ function drawProgressChart() {
       }
     });
     ctx.stroke();
-    if (lastPoint) {
+    drawablePoints.forEach((point) => {
+      const hasNeighbor = item.values[point.index - 1] !== null || item.values[point.index + 1] !== null;
+      if (!hasNeighbor) return;
       ctx.fillStyle = item.color;
       ctx.beginPath();
-      ctx.arc(lastPoint.x, lastPoint.y, 3.5, 0, Math.PI * 2);
+      ctx.arc(point.x, point.y, 3.2, 0, Math.PI * 2);
       ctx.fill();
-    }
+    });
   });
 }
 
