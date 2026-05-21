@@ -8955,18 +8955,13 @@ button:active,
   background: linear-gradient(145deg, rgba(38, 45, 51, 0.92), rgba(27, 33, 38, 0.9)) !important;
 }
 
-/* v224: softer dashboard section surfaces */
+/* v225: rollback dashboard section surface experiment */
 #dashboardScreen .hero-panel,
 #dashboardScreen .stat-card,
 #dashboardScreen .chart-panel {
-  background:
-    linear-gradient(145deg, rgba(52, 61, 68, 0.9), rgba(39, 47, 54, 0.88)) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 8px 18px rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid rgba(246, 244, 239, 0.18) !important;
-  border-left-color: rgba(246, 244, 239, 0.36) !important;
-  border-left-width: 3px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-color: rgba(246, 244, 239, 0.13) !important;
 }
 
 #dashboardScreen .hero-panel::before,
@@ -8977,13 +8972,6 @@ button:active,
 #dashboardScreen .chart-panel::after {
   display: none !important;
   content: none !important;
-}
-
-#dashboardScreen .hero-panel {
-  background:
-    radial-gradient(circle at 88% 12%, rgba(245, 242, 235, 0.08), transparent 5.5rem),
-    linear-gradient(145deg, rgba(58, 67, 74, 0.92), rgba(41, 50, 57, 0.9)) !important;
-  border-color: rgba(246, 244, 239, 0.24) !important;
 }
 
 /* v220: stable native iPhone-style date carousel */

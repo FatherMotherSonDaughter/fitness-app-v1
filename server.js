@@ -5,7 +5,7 @@ const path = require("path");
 
 const PORT = Number(process.env.PORT || 4173);
 const ROOT = __dirname;
-const APP_VERSION = "224";
+const APP_VERSION = "225";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
